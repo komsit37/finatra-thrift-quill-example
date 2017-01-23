@@ -3,17 +3,18 @@ import sbt.Keys._
 parallelExecution in ThisBuild := false
 
 lazy val versions = new {
-  val finatra = "2.7.0"
+  val finatra = "2.6.0"
   val guice = "4.0"
   val logback = "1.1.7"
   val mockito = "1.9.5"
   val scalacheck = "1.13.4"
   val scalatest = "3.0.0"
   val specs2 = "2.3.12"
+  val quill = "1.0.1"
 }
 
 lazy val baseSettings = Seq(
-  version := "2.7.0",
+  version := "2.6.0",
   scalaVersion := "2.11.8",
   ivyScala := ivyScala.value.map(_.copy(overrideScalaVersion = true)),
   libraryDependencies ++= Seq(
@@ -48,6 +49,7 @@ lazy val thriftExampleServer = (project in file("thrift-example-server")).
     libraryDependencies ++= Seq(
       "com.twitter" %% "finatra-thrift" % versions.finatra,
       "ch.qos.logback" % "logback-classic" % versions.logback,
+      "io.getquill" %% "quill-finagle-mysql" % versions.quill,
 
       "com.twitter" %% "finatra-thrift" % versions.finatra % "test",
       "com.twitter" %% "inject-app" % versions.finatra % "test",
