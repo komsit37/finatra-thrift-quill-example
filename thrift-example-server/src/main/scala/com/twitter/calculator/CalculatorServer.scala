@@ -9,6 +9,8 @@ object CalculatorServerMain extends CalculatorServer
 
 class CalculatorServer extends ThriftServer {
   override val name = "calculator-server"
+  override val defaultFinatraThriftPort: String = ":9911"
+  override def defaultHttpPort: Int = 9912 //server admin port
 
   override def modules = Seq(
     ClientIdWhitelistModule)

@@ -16,8 +16,21 @@ then run below from command line
 ```bash
 > flyway migrate //to create initial db schema
 > sbt compile
+```
+
+to run server
+```
+sbt "thriftExampleServer/run"
+```
+
+to run test client
+```
+sbt "thriftExampleServer/test:runMain com.twitter.calculator.example.CalculatorClientExample"
+```
+
+to run unit test
+```
 > sbt test
-> sbt run
 ```
 
 ## Dependencies

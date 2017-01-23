@@ -48,6 +48,13 @@
     </encoder>
   </appender>
 
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%.5thread] %.-1level %.20logger{3} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
   <!-- ===================================================== -->
   <!-- Primary Async Appenders -->
   <!-- ===================================================== -->
@@ -78,6 +85,7 @@
 
   <root level="${log_level:-INFO}">
     <appender-ref ref="ASYNC-SERVICE"/>
+    <appender-ref ref="STDOUT" />
   </root>
 
   <!-- Access Logging -->
