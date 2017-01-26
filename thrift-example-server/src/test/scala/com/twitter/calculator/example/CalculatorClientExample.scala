@@ -6,9 +6,11 @@ import com.twitter.finagle.thrift.ClientId
 import com.twitter.util.{Await, Future}
 
 object CalculatorClientExample extends App {
+  val remoteServer = "localhost:9911"
   val client = ThriftMux.Client()
     .withClientId(ClientId("client123"))
-    .newIface[Calculator[Future]]("localhost:9911", "calculator-server")
+    .newIface[Calculator[Future]](remoteServer, "calculator-server")
+  println("Calling addNumbers on remote thrift server: " + remoteServer + "...")
   val res = Await.result(client.addNumbers(1, 2))
-  println(res)
+  println("Result is " + res)
 }

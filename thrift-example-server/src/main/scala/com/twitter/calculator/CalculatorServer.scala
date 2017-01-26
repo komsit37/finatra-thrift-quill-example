@@ -1,5 +1,6 @@
 package com.twitter.calculator
 
+import com.twitter.calculator.db.QuillDbContextModule
 import com.twitter.finatra.thrift.ThriftServer
 import com.twitter.finatra.thrift.routing.ThriftRouter
 import com.twitter.finatra.thrift.filters._
@@ -13,7 +14,8 @@ class CalculatorServer extends ThriftServer {
   override def defaultHttpPort: Int = 9912 //server admin port
 
   override def modules = Seq(
-    ClientIdWhitelistModule)
+    ClientIdWhitelistModule,
+    QuillDbContextModule) //module for quill
 
   override def configureThrift(router: ThriftRouter) {
     router

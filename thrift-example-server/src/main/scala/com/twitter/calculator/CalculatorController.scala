@@ -4,10 +4,12 @@ import com.twitter.calculator.thriftscala.Calculator
 import com.twitter.calculator.thriftscala.Calculator._
 import com.twitter.finatra.thrift.Controller
 import com.twitter.util.Future
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
+
+import com.twitter.calculator.db.PersonService
 
 @Singleton
-class CalculatorController
+class CalculatorController @Inject()(personService: PersonService)//PersonService is here just to demonstrate how to use service in controller
   extends Controller
   with Calculator.BaseServiceIface {
 
