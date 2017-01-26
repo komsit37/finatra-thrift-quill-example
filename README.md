@@ -11,7 +11,6 @@ Flyway 4.0.3 by Boxfuse
 ## Setup
 update db config in
 * flyway.conf
-* xxx.conf
 
 then run below from command line
 ```bash
