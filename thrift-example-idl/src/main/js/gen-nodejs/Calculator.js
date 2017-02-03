@@ -12,10 +12,10 @@ var ttypes = require('./calculator_types');
 //HELPER FUNCTIONS AND STRUCTURES
 
 Calculator_increment_args = function(args) {
-  this.num = null;
+  this.n = null;
   if (args) {
-    if (args.num !== undefined && args.num !== null) {
-      this.num = new ttypes.Num(args.num);
+    if (args.n !== undefined && args.n !== null) {
+      this.n = new ttypes.Num(args.n);
     }
   }
 };
@@ -35,8 +35,8 @@ Calculator_increment_args.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.STRUCT) {
-        this.num = new ttypes.Num();
-        this.num.read(input);
+        this.n = new ttypes.Num();
+        this.n.read(input);
       } else {
         input.skip(ftype);
       }
@@ -55,9 +55,9 @@ Calculator_increment_args.prototype.read = function(input) {
 
 Calculator_increment_args.prototype.write = function(output) {
   output.writeStructBegin('Calculator_increment_args');
-  if (this.num !== null && this.num !== undefined) {
-    output.writeFieldBegin('num', Thrift.Type.STRUCT, 1);
-    this.num.write(output);
+  if (this.n !== null && this.n !== undefined) {
+    output.writeFieldBegin('n', Thrift.Type.STRUCT, 1);
+    this.n.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -128,7 +128,7 @@ CalculatorClient = exports.Client = function(output, pClass) {
 CalculatorClient.prototype = {};
 CalculatorClient.prototype.seqid = function() { return this._seqid; }
 CalculatorClient.prototype.new_seqid = function() { return this._seqid += 1; }
-CalculatorClient.prototype.increment = function(num, callback) {
+CalculatorClient.prototype.increment = function(n, callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
     var _defer = Q.defer();
@@ -139,19 +139,19 @@ CalculatorClient.prototype.increment = function(num, callback) {
         _defer.resolve(result);
       }
     };
-    this.send_increment(num);
+    this.send_increment(n);
     return _defer.promise;
   } else {
     this._reqs[this.seqid()] = callback;
-    this.send_increment(num);
+    this.send_increment(n);
   }
 };
 
-CalculatorClient.prototype.send_increment = function(num) {
+CalculatorClient.prototype.send_increment = function(n) {
   var output = new this.pClass(this.output);
   output.writeMessageBegin('increment', Thrift.MessageType.CALL, this.seqid());
   var args = new Calculator_increment_args();
-  args.num = num;
+  args.n = n;
   args.write(output);
   output.writeMessageEnd();
   return this.output.flush();
@@ -198,7 +198,7 @@ CalculatorProcessor.prototype.process_increment = function(seqid, input, output)
   args.read(input);
   input.readMessageEnd();
   if (this._handler.increment.length === 1) {
-    Q.fcall(this._handler.increment, args.num)
+    Q.fcall(this._handler.increment, args.n)
       .then(function(result) {
         var result = new Calculator_increment_result({success: result});
         output.writeMessageBegin("increment", Thrift.MessageType.REPLY, seqid);
@@ -213,7 +213,7 @@ CalculatorProcessor.prototype.process_increment = function(seqid, input, output)
         output.flush();
       });
   } else {
-    this._handler.increment(args.num, function (err, result) {
+    this._handler.increment(args.n, function (err, result) {
       if (err == null) {
         var result = new Calculator_increment_result((err != null ? err : {success: result}));
         output.writeMessageBegin("increment", Thrift.MessageType.REPLY, seqid);
