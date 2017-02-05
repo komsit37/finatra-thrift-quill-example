@@ -119,6 +119,89 @@ Calculator_increment_result.prototype.write = function(output) {
   return;
 };
 
+
+Calculator_x_args = function(args) {
+};
+Calculator_x_args.prototype = {};
+Calculator_x_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    input.skip(ftype);
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Calculator_x_args.prototype.write = function(output) {
+  output.writeStructBegin('Calculator_x_args');
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Calculator_x_result = function(args) {
+  this.success = null;
+  if (args) {
+    if (args.success !== undefined && args.success !== null) {
+      this.success = new ttypes.UpgradeReply(args.success);
+    }
+  }
+};
+Calculator_x_result.prototype = {};
+Calculator_x_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.success = new ttypes.UpgradeReply();
+        this.success.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Calculator_x_result.prototype.write = function(output) {
+  output.writeStructBegin('Calculator_x_result');
+  if (this.success !== null && this.success !== undefined) {
+    output.writeFieldBegin('success', Thrift.Type.STRUCT, 0);
+    this.success.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 CalculatorClient = exports.Client = function(output, pClass) {
     this.output = output;
     this.pClass = pClass;
@@ -175,6 +258,98 @@ CalculatorClient.prototype.recv_increment = function(input,mtype,rseqid) {
   }
   return callback('increment failed: unknown result');
 };
+CalculatorClient.prototype.upgrade = function(callback) {
+  this._seqid = this.new_seqid();
+  if (callback === undefined) {
+    var _defer = Q.defer();
+    this._reqs[this.seqid()] = function(error, result) {
+      if (error) {
+        _defer.reject(error);
+      } else {
+        _defer.resolve(result);
+      }
+    };
+    this.send___can__finagle__trace__v3__();
+    return _defer.promise;
+  } else {
+    this._reqs[this.seqid()] = callback;
+    this.send___can__finagle__trace__v3__();
+  }
+};
+
+CalculatorClient.prototype.send___can__finagle__trace__v3__ = function() {
+  var output = new this.pClass(this.output);
+  output.writeMessageBegin('__can__finagle__trace__v3__', Thrift.MessageType.CALL, this.seqid());
+  // var args = new Calculator___can__finagle__trace__v3___args();
+  // args.write(output);
+  output.writeMessageEnd();
+  return this.output.flush();
+};
+
+CalculatorClient.prototype.recv___can__finagle__trace__v3__ = function(input,mtype,rseqid) {
+  var callback = this._reqs[rseqid] || function() {};
+  delete this._reqs[rseqid];
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(input);
+    input.readMessageEnd();
+    return callback(x);
+  }
+  var result = new UpgradeReply();
+  result.read(input);
+  input.readMessageEnd();
+
+  if (null !== result.success) {
+    return callback(null, result.success);
+  }
+  return callback('__can__finagle__trace__v3__ failed: unknown result');
+};
+CalculatorClient.prototype.x = function(callback) {
+  this._seqid = this.new_seqid();
+  if (callback === undefined) {
+    var _defer = Q.defer();
+    this._reqs[this.seqid()] = function(error, result) {
+      if (error) {
+        _defer.reject(error);
+      } else {
+        _defer.resolve(result);
+      }
+    };
+    this.send_x();
+    return _defer.promise;
+  } else {
+    this._reqs[this.seqid()] = callback;
+    this.send_x();
+  }
+};
+
+CalculatorClient.prototype.send_x = function() {
+  var output = new this.pClass(this.output);
+  output.writeMessageBegin('x', Thrift.MessageType.CALL, this.seqid());
+  var args = new Calculator_x_args();
+  args.write(output);
+  output.writeMessageEnd();
+  return this.output.flush();
+};
+
+CalculatorClient.prototype.recv_x = function(input,mtype,rseqid) {
+  var callback = this._reqs[rseqid] || function() {};
+  delete this._reqs[rseqid];
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(input);
+    input.readMessageEnd();
+    return callback(x);
+  }
+  var result = new Calculator_x_result();
+  result.read(input);
+  input.readMessageEnd();
+
+  if (null !== result.success) {
+    return callback(null, result.success);
+  }
+  return callback('x failed: unknown result');
+};
 CalculatorProcessor = exports.Processor = function(handler) {
   this._handler = handler
 }
@@ -220,6 +395,76 @@ CalculatorProcessor.prototype.process_increment = function(seqid, input, output)
       } else {
         var result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
         output.writeMessageBegin("increment", Thrift.MessageType.EXCEPTION, seqid);
+      }
+      result.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    });
+  }
+}
+
+CalculatorProcessor.prototype.process___can__finagle__trace__v3__ = function(seqid, input, output) {
+  var args = new Calculator___can__finagle__trace__v3___args();
+  args.read(input);
+  input.readMessageEnd();
+  if (this._handler.__can__finagle__trace__v3__.length === 0) {
+    Q.fcall(this._handler.__can__finagle__trace__v3__)
+      .then(function(result) {
+        var result = new Calculator___can__finagle__trace__v3___result({success: result});
+        output.writeMessageBegin("__can__finagle__trace__v3__", Thrift.MessageType.REPLY, seqid);
+        result.write(output);
+        output.writeMessageEnd();
+        output.flush();
+      }, function (err) {
+        var result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
+        output.writeMessageBegin("__can__finagle__trace__v3__", Thrift.MessageType.EXCEPTION, seqid);
+        result.write(output);
+        output.writeMessageEnd();
+        output.flush();
+      });
+  } else {
+    this._handler.__can__finagle__trace__v3__(function (err, result) {
+      if (err == null) {
+        var result = new Calculator___can__finagle__trace__v3___result((err != null ? err : {success: result}));
+        output.writeMessageBegin("__can__finagle__trace__v3__", Thrift.MessageType.REPLY, seqid);
+      } else {
+        var result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
+        output.writeMessageBegin("__can__finagle__trace__v3__", Thrift.MessageType.EXCEPTION, seqid);
+      }
+      result.write(output);
+      output.writeMessageEnd();
+      output.flush();
+    });
+  }
+}
+
+CalculatorProcessor.prototype.process_x = function(seqid, input, output) {
+  var args = new Calculator_x_args();
+  args.read(input);
+  input.readMessageEnd();
+  if (this._handler.x.length === 0) {
+    Q.fcall(this._handler.x)
+      .then(function(result) {
+        var result = new Calculator_x_result({success: result});
+        output.writeMessageBegin("x", Thrift.MessageType.REPLY, seqid);
+        result.write(output);
+        output.writeMessageEnd();
+        output.flush();
+      }, function (err) {
+        var result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
+        output.writeMessageBegin("x", Thrift.MessageType.EXCEPTION, seqid);
+        result.write(output);
+        output.writeMessageEnd();
+        output.flush();
+      });
+  } else {
+    this._handler.x(function (err, result) {
+      if (err == null) {
+        var result = new Calculator_x_result((err != null ? err : {success: result}));
+        output.writeMessageBegin("x", Thrift.MessageType.REPLY, seqid);
+      } else {
+        var result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
+        output.writeMessageBegin("x", Thrift.MessageType.EXCEPTION, seqid);
       }
       result.write(output);
       output.writeMessageEnd();

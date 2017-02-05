@@ -1,6 +1,5 @@
 package com.twitter.calculator
 
-import com.twitter.calculator.db.QuillDbContextModule
 import com.twitter.finatra.thrift.ThriftServer
 import com.twitter.finatra.thrift.routing.ThriftRouter
 import com.twitter.finatra.thrift.filters._

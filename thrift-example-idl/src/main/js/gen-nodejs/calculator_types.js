@@ -62,3 +62,31 @@ Num.prototype.write = function(output) {
   return;
 };
 
+UpgradeReply = module.exports.UpgradeReply = function(args) {
+};
+UpgradeReply.prototype = {};
+UpgradeReply.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    input.skip(ftype);
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+UpgradeReply.prototype.write = function(output) {
+  output.writeStructBegin('UpgradeReply');
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+

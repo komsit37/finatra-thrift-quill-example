@@ -1,6 +1,6 @@
 package com.twitter.calculator
 
-import com.twitter.calculator.thriftscala.{Calculator, Num}
+import com.twitter.calculator.thriftscala.{Calculator, Num, UpgradeReply}
 import com.twitter.calculator.thriftscala.Calculator._
 import com.twitter.finatra.thrift.Controller
 import com.twitter.util.Future
@@ -14,5 +14,10 @@ class CalculatorController @Inject()()//PersonService is here just to demonstrat
 
   override val increment = handle(Increment) { args: Increment.Args =>
     Future.value(Num(args.n.a + 1))
+  }
+
+  override val x = handle(X) { args: X.Args =>
+    info("x called")
+    Future.value(UpgradeReply())
   }
 }
