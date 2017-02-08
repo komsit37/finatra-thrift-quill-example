@@ -35,12 +35,26 @@ var VERSION_MASK = -65536,   // 0xffff0000
     VERSION_1 = -2147418112, // 0x80010000
     TYPE_MASK = 0x000000ff;
 
-FinagleTBinaryProtocol.upgraded = false
+// FinagleTBinaryProtocol.upgraded = false
 function FinagleTBinaryProtocol(trans, strictRead, strictWrite) {
   this.trans = trans;
   this.strictRead = (strictRead !== undefined ? strictRead : false);
   this.strictWrite = (strictWrite !== undefined ? strictWrite : true);
+
+  if (FinagleTBinaryProtocol.upgraded === undefined) {
+      this.upgrade()
+  }
 };
+
+FinagleTBinaryProtocol.prototype.upgrade = function() {
+  console.log('init')
+    FinagleTBinaryProtocol.upgraded = false
+    this.writeMessageBegin('__can__finagle__trace__v3__', Thrift.MessageType.CALL, 0);
+    // var args = new Calculator___can__finagle__trace__v3___args();
+    // args.write(output);
+    this.writeMessageEnd();
+    this.flush();
+}
 
 FinagleTBinaryProtocol.prototype.flush = function() {
   return this.trans.flush();
@@ -49,12 +63,11 @@ FinagleTBinaryProtocol.prototype.flush = function() {
 FinagleTBinaryProtocol.prototype.writeMessageBegin = function(name, type, seqid) {
   //komsit custom
     if (FinagleTBinaryProtocol.upgraded === true) {
-        var header = new Tracing.RequestHeader()
-        header.trace_id = 12345
-        header.span_id = 1234567890
-        var clid = new Tracing.ClientId()
-        clid.name = "nodejs"
-        header.client_id = clid
+        var header = new Tracing.RequestHeader({
+            trace_id: 12345,
+            span_id: 1234567890,
+            client_id: new Tracing.ClientId({name: 'nodejs'})
+        })
         header.write(this)
     }
     if (this.strictWrite) {
@@ -188,11 +201,12 @@ FinagleTBinaryProtocol.prototype.writeBinary = function(arg) {
 };
 
 FinagleTBinaryProtocol.prototype.readMessageBegin = function() {
-    //komsit custom
-      if (FinagleTBinaryProtocol.upgraded === true) {
-          var header = new Tracing.ResponseHeader()
-          header.read(this) //failing here, cannot read response header
-      }
+//komsit custom
+  if (FinagleTBinaryProtocol.upgraded === true) {
+      var header = new Tracing.ResponseHeader()
+      header.read(this) //failing here, cannot read response header
+      this.last_response = header
+  }
 
   var sz = this.readI32();
   var type, name, seqid;
@@ -218,7 +232,7 @@ FinagleTBinaryProtocol.prototype.readMessageBegin = function() {
   }
     if (name === '__can__finagle__trace__v3__') {
         FinagleTBinaryProtocol.upgraded = true
-        seqid = 1 //somehow got wrong seqid when calling upgrade, so need to correct it here
+        //seqid = 1 //somehow got wrong seqid when calling upgrade, so need to correct it here
     }
   return {fname: name, mtype: type, rseqid: seqid};
 };

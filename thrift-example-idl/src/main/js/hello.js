@@ -20,17 +20,16 @@ connection.on('error', function(err) {
 var client = thrift.createClient(Calculator, connection);
 // var client = thrift.createClient(Finagle, connection);
 
-client.upgrade(function(err, res){
-    console.log('up')
-    var num = new ttypes.Num()
-    num.a = 1
+// client.upgrade(function(err, res){
+//     console.log('up')
+    var num = new ttypes.Num({a: 1})
     client.x(function(err, response) {
         client.increment(num, function(err, r) {
             console.log("1+1=" + r.a);
             connection.end();
         });
     });
-})
+// })
 // protocol.upgraded = true
 
 // client.__can__finagle__trace__v3__(function(err, response) {

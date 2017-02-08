@@ -287,22 +287,23 @@ CalculatorClient.prototype.send___can__finagle__trace__v3__ = function() {
 };
 
 CalculatorClient.prototype.recv___can__finagle__trace__v3__ = function(input,mtype,rseqid) {
-  var callback = this._reqs[rseqid] || function() {};
-  delete this._reqs[rseqid];
-  if (mtype == Thrift.MessageType.EXCEPTION) {
-    var x = new Thrift.TApplicationException();
-    x.read(input);
-    input.readMessageEnd();
-    return callback(x);
-  }
-  var result = new UpgradeReply();
-  result.read(input);
-  input.readMessageEnd();
-
-  if (null !== result.success) {
-    return callback(null, result.success);
-  }
-  return callback('__can__finagle__trace__v3__ failed: unknown result');
+  console.log('upgraded')
+  // var callback = this._reqs[rseqid] || function() {};
+  // delete this._reqs[rseqid];
+  // if (mtype == Thrift.MessageType.EXCEPTION) {
+  //   var x = new Thrift.TApplicationException();
+  //   x.read(input);
+  //   input.readMessageEnd();
+  //   return callback(x);
+  // }
+  // var result = new UpgradeReply();
+  // result.read(input);
+  // input.readMessageEnd();
+  //
+  // if (null !== result.success) {
+  //   return callback(null, result.success);
+  // }
+  // return callback('__can__finagle__trace__v3__ failed: unknown result');
 };
 CalculatorClient.prototype.x = function(callback) {
   this._seqid = this.new_seqid();
