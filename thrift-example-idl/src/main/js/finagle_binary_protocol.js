@@ -17,10 +17,13 @@
  * under the License.
  */
 
-var log = require('./../node_modules/thrift/lib/nodejs/lib/thrift/log');
-var binary = require('./../node_modules/thrift/lib/nodejs/lib/thrift/binary');
+//mainly taken from binary_protocol adding parts to handle finagle upgrade and tracing header
+
+var log = require('thrift/lib/nodejs/lib/thrift/log');
+var binary = require('thrift/lib/nodejs/lib/thrift/binary');
+var Thrift = require('thrift/lib/nodejs/lib/thrift/thrift');
+
 var Int64 = require('node-int64');
-var Thrift = require('./../node_modules/thrift/lib/nodejs/lib/thrift/thrift');
 var Type = Thrift.Type;
 
 var Tracing = require('./tracing_types')
