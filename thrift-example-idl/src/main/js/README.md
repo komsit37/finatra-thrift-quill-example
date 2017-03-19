@@ -55,3 +55,4 @@ this.writeMessageBegin('__can__finagle__trace__v3__', Thrift.MessageType.CALL, 0
 
 1. How to pass trace request to protocol?
 2. How to wait for upgrade reply before sending first message?
+3. Fix   message: 'Received a response to an unknown RPC function', when upgrade

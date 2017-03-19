@@ -119,7 +119,6 @@ Calculator_increment_result.prototype.write = function(output) {
   return;
 };
 
-
 Calculator_x_args = function(args) {
 };
 Calculator_x_args.prototype = {};
@@ -258,53 +257,6 @@ CalculatorClient.prototype.recv_increment = function(input,mtype,rseqid) {
   }
   return callback('increment failed: unknown result');
 };
-CalculatorClient.prototype.upgrade = function(callback) {
-  this._seqid = this.new_seqid();
-  if (callback === undefined) {
-    var _defer = Q.defer();
-    this._reqs[this.seqid()] = function(error, result) {
-      if (error) {
-        _defer.reject(error);
-      } else {
-        _defer.resolve(result);
-      }
-    };
-    this.send___can__finagle__trace__v3__();
-    return _defer.promise;
-  } else {
-    this._reqs[this.seqid()] = callback;
-    this.send___can__finagle__trace__v3__();
-  }
-};
-
-CalculatorClient.prototype.send___can__finagle__trace__v3__ = function() {
-  var output = new this.pClass(this.output);
-  output.writeMessageBegin('__can__finagle__trace__v3__', Thrift.MessageType.CALL, this.seqid());
-  // var args = new Calculator___can__finagle__trace__v3___args();
-  // args.write(output);
-  output.writeMessageEnd();
-  return this.output.flush();
-};
-
-CalculatorClient.prototype.recv___can__finagle__trace__v3__ = function(input,mtype,rseqid) {
-  console.log('upgraded')
-  // var callback = this._reqs[rseqid] || function() {};
-  // delete this._reqs[rseqid];
-  // if (mtype == Thrift.MessageType.EXCEPTION) {
-  //   var x = new Thrift.TApplicationException();
-  //   x.read(input);
-  //   input.readMessageEnd();
-  //   return callback(x);
-  // }
-  // var result = new UpgradeReply();
-  // result.read(input);
-  // input.readMessageEnd();
-  //
-  // if (null !== result.success) {
-  //   return callback(null, result.success);
-  // }
-  // return callback('__can__finagle__trace__v3__ failed: unknown result');
-};
 CalculatorClient.prototype.x = function(callback) {
   this._seqid = this.new_seqid();
   if (callback === undefined) {
@@ -351,6 +303,12 @@ CalculatorClient.prototype.recv_x = function(input,mtype,rseqid) {
   }
   return callback('x failed: unknown result');
 };
+
+//komsit custom - need this or we get TApplicationException message: 'Received a response to an unknown RPC function'
+CalculatorClient.prototype.recv___can__finagle__trace__v3__ = function(input,mtype,rseqid) {
+    console.log('upgraded')
+};
+
 CalculatorProcessor = exports.Processor = function(handler) {
   this._handler = handler
 }
@@ -396,41 +354,6 @@ CalculatorProcessor.prototype.process_increment = function(seqid, input, output)
       } else {
         var result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
         output.writeMessageBegin("increment", Thrift.MessageType.EXCEPTION, seqid);
-      }
-      result.write(output);
-      output.writeMessageEnd();
-      output.flush();
-    });
-  }
-}
-
-CalculatorProcessor.prototype.process___can__finagle__trace__v3__ = function(seqid, input, output) {
-  var args = new Calculator___can__finagle__trace__v3___args();
-  args.read(input);
-  input.readMessageEnd();
-  if (this._handler.__can__finagle__trace__v3__.length === 0) {
-    Q.fcall(this._handler.__can__finagle__trace__v3__)
-      .then(function(result) {
-        var result = new Calculator___can__finagle__trace__v3___result({success: result});
-        output.writeMessageBegin("__can__finagle__trace__v3__", Thrift.MessageType.REPLY, seqid);
-        result.write(output);
-        output.writeMessageEnd();
-        output.flush();
-      }, function (err) {
-        var result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
-        output.writeMessageBegin("__can__finagle__trace__v3__", Thrift.MessageType.EXCEPTION, seqid);
-        result.write(output);
-        output.writeMessageEnd();
-        output.flush();
-      });
-  } else {
-    this._handler.__can__finagle__trace__v3__(function (err, result) {
-      if (err == null) {
-        var result = new Calculator___can__finagle__trace__v3___result((err != null ? err : {success: result}));
-        output.writeMessageBegin("__can__finagle__trace__v3__", Thrift.MessageType.REPLY, seqid);
-      } else {
-        var result = new Thrift.TApplicationException(Thrift.TApplicationExceptionType.UNKNOWN, err.message);
-        output.writeMessageBegin("__can__finagle__trace__v3__", Thrift.MessageType.EXCEPTION, seqid);
       }
       result.write(output);
       output.writeMessageEnd();
