@@ -48,12 +48,13 @@ function FinagleTBinaryProtocol(trans, strictRead, strictWrite) {
 
 FinagleTBinaryProtocol.prototype.upgrade = function() {
   console.log('init')
-    FinagleTBinaryProtocol.upgraded = false
-    this.writeMessageBegin('__can__finagle__trace__v3__', Thrift.MessageType.CALL, 0);
-    // var args = new Calculator___can__finagle__trace__v3___args();
-    // args.write(output);
-    this.writeMessageEnd();
-    this.flush();
+  this.writeMessageBegin('__can__finagle__trace__v3__', Thrift.MessageType.CALL, 0);
+  // var args = new Calculator___can__finagle__trace__v3___args();
+  // args.write(output);
+  this.writeMessageEnd();
+  FinagleTBinaryProtocol.upgraded = false // do not upgrade until we get reply
+  FinagleTBinaryProtocol.upgrading = true //
+  this.flush();
 }
 
 FinagleTBinaryProtocol.prototype.flush = function() {
@@ -62,9 +63,11 @@ FinagleTBinaryProtocol.prototype.flush = function() {
 
 FinagleTBinaryProtocol.prototype.writeMessageBegin = function(name, type, seqid) {
   //komsit custom
-    if (FinagleTBinaryProtocol.upgraded === true) {
+    //todo: we are assuming upgrade always success by adding tracing header before upgrade success (upgrading === true)
+    //in other words, this will not work with non-finagle thrift
+    if (FinagleTBinaryProtocol.upgraded === true || FinagleTBinaryProtocol.upgrading === true) {
         var header = new Tracing.RequestHeader({
-            trace_id: 12345,
+            trace_id: 12345, //todo: read tracing header from somewhere
             span_id: 1234567890,
             client_id: new Tracing.ClientId({name: 'nodejs'})
         })
@@ -204,7 +207,7 @@ FinagleTBinaryProtocol.prototype.readMessageBegin = function() {
 //komsit custom
   if (FinagleTBinaryProtocol.upgraded === true) {
       var header = new Tracing.ResponseHeader()
-      header.read(this) //failing here, cannot read response header
+      header.read(this)
       this.last_response = header
   }
 
@@ -232,7 +235,6 @@ FinagleTBinaryProtocol.prototype.readMessageBegin = function() {
   }
     if (name === '__can__finagle__trace__v3__') {
         FinagleTBinaryProtocol.upgraded = true
-        //seqid = 1 //somehow got wrong seqid when calling upgrade, so need to correct it here
     }
   return {fname: name, mtype: type, rseqid: seqid};
 };
