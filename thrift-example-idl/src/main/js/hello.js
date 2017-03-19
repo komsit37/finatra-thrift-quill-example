@@ -23,12 +23,12 @@ var client = thrift.createClient(Calculator, connection);
 // client.upgrade(function(err, res){
 //     console.log('up')
     var num = new ttypes.Num({a: 1})
-    client.x(function(err, response) {
+    //client.x(function(err, response) {
         client.increment(num, function(err, r) {
             console.log("1+1=" + r.a);
             connection.end();
         });
-    });
+    //});
 // })
 // protocol.upgraded = true
 
