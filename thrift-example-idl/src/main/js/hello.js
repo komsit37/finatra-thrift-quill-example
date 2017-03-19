@@ -6,8 +6,9 @@ var ttypes = require('./gen-nodejs/calculator_types');
 var transport = thrift.TFramedTransport;
 // var protocol = thrift.TBinaryProtocol;
 var protocol = require('./finagle-thrift/finagle_binary_protocol');
+var finagleConnection = require('./finagle-thrift/finagle_connection');
 
-var connection = thrift.createConnection("localhost", 9911, {
+var connection = finagleConnection.createConnection("localhost", 9911, {
   transport : transport,
   protocol : protocol
 });
