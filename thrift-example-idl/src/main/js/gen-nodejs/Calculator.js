@@ -304,6 +304,7 @@ CalculatorClient.prototype.recv_x = function(input,mtype,rseqid) {
   return callback('x failed: unknown result');
 };
 
+//todo: how to not need this
 //komsit custom - need this or we get TApplicationException message: 'Received a response to an unknown RPC function'
 CalculatorClient.prototype.recv___can__finagle__trace__v3__ = function(input,mtype,rseqid) {
     console.log('upgraded')

@@ -5,7 +5,7 @@ var ttypes = require('./gen-nodejs/calculator_types');
 
 var transport = thrift.TFramedTransport;
 // var protocol = thrift.TBinaryProtocol;
-var protocol = require('./finagle_binary_protocol');
+var protocol = require('./finagle-thrift/finagle_binary_protocol');
 
 var connection = thrift.createConnection("localhost", 9911, {
   transport : transport,
@@ -26,7 +26,10 @@ var client = thrift.createClient(Calculator, connection);
     //client.x(function(err, response) {
         client.increment(num, function(err, r) {
             console.log("1+1=" + r.a);
-            connection.end();
+            client.increment(num, function(err, r) {
+                console.log("1+1=" + r.a);
+                connection.end();
+            });
         });
     //});
 // })
