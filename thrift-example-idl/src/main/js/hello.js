@@ -7,6 +7,7 @@ var transport = thrift.TFramedTransport;
 // var protocol = thrift.TBinaryProtocol;
 var protocol = require('./finagle-thrift/finagle_binary_protocol');
 var finagleConnection = require('./finagle-thrift/finagle_connection');
+var TracingHeader = require('./finagle-thrift/tracing_header_factory');
 
 var connection = finagleConnection.createConnection("localhost", 9911, {
   transport : transport,
@@ -19,25 +20,17 @@ connection.on('error', function(err) {
 
 // Create a Calculator client with the connection
 var client = thrift.createClient(Calculator, connection);
-// var client = thrift.createClient(Finagle, connection);
 
-// client.upgrade(function(err, res){
-//     console.log('up')
+TracingHeader.init('hello') //init header with clientId 'hello'
+TracingHeader.setTrace(1, 2) //set trace id = 1, span id = 2
     var num = new ttypes.Num({a: 1})
     //client.x(function(err, response) {
         client.increment(num, function(err, r) {
             console.log("1+1=" + r.a);
+            TracingHeader.setTrace(2, 3)
             client.increment(num, function(err, r) {
                 console.log("1+1=" + r.a);
                 connection.end();
             });
         });
-    //});
-// })
-// protocol.upgraded = true
-
-// client.__can__finagle__trace__v3__(function(err, response) {
-//     console.log("upgrade=" + response);
-// });
-
 

@@ -26,9 +26,10 @@ var Thrift = require('thrift/lib/nodejs/lib/thrift/thrift');
 var Int64 = require('node-int64');
 var Type = Thrift.Type;
 
-var Tracing = require('./tracing_types')
+var TracingHeader = require('./tracing_header_factory');
 
 module.exports = FinagleTBinaryProtocol;
+
 
 // JavaScript supports only numeric doubles, therefore even hex values are always signed.
 // The largest integer value which can be represented in JavaScript is +/-2^53.
@@ -50,19 +51,8 @@ FinagleTBinaryProtocol.prototype.flush = function() {
 };
 
 FinagleTBinaryProtocol.prototype.writeMessageBegin = function(name, type, seqid) {
-  //komsit custom
-    //todo: we are assuming upgrade always success by adding tracing header before upgrade success (upgrading === true)
-    //in other words, this will not work with non-finagle thrift
-    if (FinagleTBinaryProtocol.upgraded === true || FinagleTBinaryProtocol.upgrading === true) {
-        var header = new Tracing.RequestHeader({
-            trace_id: 12345, //todo: read tracing header from somewhere
-            span_id: 1234567890,
-            client_id: new Tracing.ClientId({name: 'nodejs'})
-        })
-        header.write(this)
+    TracingHeader.header.write(this)
 
-    }
-    FinagleTBinaryProtocol.upgrading = true
     if (this.strictWrite) {
       this.writeI32(VERSION_1 | type);
       this.writeString(name);
@@ -79,6 +69,26 @@ FinagleTBinaryProtocol.prototype.writeMessageBegin = function(name, type, seqid)
     } else {
       this._seqid = seqid;
       this.trans.setCurrSeqId(seqid);
+    }
+};
+
+FinagleTBinaryProtocol.prototype.writeMessageBeginOriginal = function(name, type, seqid) {
+    if (this.strictWrite) {
+        this.writeI32(VERSION_1 | type);
+        this.writeString(name);
+        this.writeI32(seqid);
+    } else {
+        this.writeString(name);
+        this.writeByte(type);
+        this.writeI32(seqid);
+    }
+    // Record client seqid to find callback again
+    if (this._seqid) {
+        // TODO better logging log warning
+        log.warning('SeqId already set', { 'name': name });
+    } else {
+        this._seqid = seqid;
+        this.trans.setCurrSeqId(seqid);
     }
 };
 
@@ -194,17 +204,9 @@ FinagleTBinaryProtocol.prototype.writeBinary = function(arg) {
 };
 
 FinagleTBinaryProtocol.prototype.readMessageBegin = function() {
-//komsit custom
-  if (FinagleTBinaryProtocol.upgraded === true) {
-      var header = new Tracing.ResponseHeader()
-      header.read(this)
-      this.last_response = header
-  }
 
   var sz = this.readI32();
   var type, name, seqid;
-
-
 
   if (sz < 0) {
     var version = sz & VERSION_MASK;
@@ -223,9 +225,7 @@ FinagleTBinaryProtocol.prototype.readMessageBegin = function() {
     type = this.readByte();
     seqid = this.readI32();
   }
-    if (name === '__can__finagle__trace__v3__') {
-        FinagleTBinaryProtocol.upgraded = true
-    }
+
   return {fname: name, mtype: type, rseqid: seqid};
 };
 

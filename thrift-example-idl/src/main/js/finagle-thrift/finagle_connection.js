@@ -23,7 +23,7 @@ var tls = require('tls');
 var thrift = require('thrift/lib/nodejs/lib/thrift/thrift');
 
 var TBufferedTransport = require('thrift/lib/nodejs/lib/thrift/buffered_transport');
-var TBinaryProtocol = require('thrift/lib/nodejs/lib/thrift/binary_protocol');
+var TFinagleBinaryProtocol = require('./finagle_binary_protocol');
 var InputBufferUnderrunError = require('thrift/lib/nodejs/lib/thrift/input_buffer_underrun_error');
 
 var createClient = require('thrift/lib/nodejs/lib/thrift/create_client');
@@ -31,6 +31,7 @@ var createClient = require('thrift/lib/nodejs/lib/thrift/create_client');
 var binary = require('thrift/lib/nodejs/lib/thrift/binary');
 
 var CanTraceMethodName = "__can__finagle__trace__v3__"
+var Tracing = require('./tracing_types')
 
 var Connection = exports.Connection = function(stream, options) {
   var self = this;
@@ -43,7 +44,7 @@ var Connection = exports.Connection = function(stream, options) {
   this.ssl = (stream.encrypted);
   this.options = options || {};
   this.transport = this.options.transport || TBufferedTransport;
-  this.protocol = this.options.protocol || TBinaryProtocol;
+  this.protocol = this.options.protocol || TFinagleBinaryProtocol;
   this.offline_queue = [];
   this.connected = false;
   this.upgraded = false; //komsit
@@ -111,6 +112,12 @@ var Connection = exports.Connection = function(stream, options) {
     var message = new self.protocol(transport_with_data);
     try {
       while (true) {
+          if (self.upgraded === true) {
+              var header = new Tracing.ResponseHeader()
+              header.read(message)
+              //console.log(header) //receiving tracing header, just log for now
+              //todo: return tracing response
+          }
         var header = message.readMessageBegin();
         var dummy_seqid = header.rseqid * -1;
         var client = self.client;
@@ -178,10 +185,9 @@ Connection.prototype.upgrade = function() {
         self.connection.write(buf, seqid);
     };
     var output = new self.protocol(new self.transport(undefined, writeCb));
-    output.writeMessageBegin(CanTraceMethodName, thrift.MessageType.CALL, 0);
+    output.writeMessageBeginOriginal(CanTraceMethodName, thrift.MessageType.CALL, 0);
     output.writeMessageEnd();
     output.flush();
-    //todo: overwrite write to prepend tracing header to message after upgrade
 }
 
 Connection.prototype.end = function() {
@@ -299,7 +305,7 @@ var StdIOConnection = exports.StdIOConnection = function(command, options) {
   this.connection = child.stdin;
   this.options = options || {};
   this.transport = this.options.transport || TBufferedTransport;
-  this.protocol = this.options.protocol || TBinaryProtocol;
+  this.protocol = this.options.protocol || TFinagleBinaryProtocol;
   this.offline_queue = [];
 
   if(this._debug === true){
