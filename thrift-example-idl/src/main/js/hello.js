@@ -1,15 +1,13 @@
 'use strict';
 var thrift = require('thrift');
 var Calculator = require('./gen-nodejs/Calculator');
-// var Finagle = require('./gen-nodejs/Finagle');
 var ttypes = require('./gen-nodejs/calculator_types');
 
 var transport = thrift.TFramedTransport;
-// var protocol = thrift.TBinaryProtocol;
-var protocol = require('./finagle-thrift/finagle_binary_protocol_ext');
-// var finagleConnection = require('./finagle-thrift/finagle_connection');
-var finagleConnection = require('./finagle-thrift/finagle_connection_ext');
-var TracingHeader = require('./finagle-thrift/tracing_header_factory');
+
+var protocol = require('./finagle-thrift/finagle_binary_protocol');
+var finagleConnection = require('./finagle-thrift/finagle_connection');
+var TracingHeader = require('./finagle-thrift/static_mutable_tracing_header');
 
 var connection = finagleConnection.createConnection("localhost", 9911, {
   transport : transport,

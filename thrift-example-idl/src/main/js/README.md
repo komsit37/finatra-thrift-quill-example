@@ -50,8 +50,3 @@ this.writeMessageBegin('__can__finagle__trace__v3__', Thrift.MessageType.CALL, 0
 3. reply with `ThriftEmulator.ThriftEumulator.ttwitterAck` (this is basically `UpgradeReply` struct in `tracing.thrift`)
 4. prepend `ttwitterHeader` in all subsequent write messages
 5. all subsequent messages will be traced using tracing filter in `ThriftMux.server.tracingFilter`, which in turn, calls `ThriftMux.recordRpc`
-
-## TODO
-
-1. How to pass trace request to protocol?
-2. How to wait for upgrade reply before sending first message?
