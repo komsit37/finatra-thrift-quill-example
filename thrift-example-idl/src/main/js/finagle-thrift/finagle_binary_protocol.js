@@ -26,6 +26,7 @@ var Thrift = require('thrift/lib/nodejs/lib/thrift/thrift');
 var Int64 = require('node-int64');
 var Type = Thrift.Type;
 
+var Tracing = require('./tracing_types');
 var TracingHeader = require('./tracing_header_factory');
 
 module.exports = FinagleTBinaryProtocol;
@@ -52,24 +53,7 @@ FinagleTBinaryProtocol.prototype.flush = function() {
 
 FinagleTBinaryProtocol.prototype.writeMessageBegin = function(name, type, seqid) {
     TracingHeader.header.write(this)
-
-    if (this.strictWrite) {
-      this.writeI32(VERSION_1 | type);
-      this.writeString(name);
-      this.writeI32(seqid);
-    } else {
-      this.writeString(name);
-      this.writeByte(type);
-      this.writeI32(seqid);
-    }
-    // Record client seqid to find callback again
-    if (this._seqid) {
-      // TODO better logging log warning
-      log.warning('SeqId already set', { 'name': name });
-    } else {
-      this._seqid = seqid;
-      this.trans.setCurrSeqId(seqid);
-    }
+    this.writeMessageBeginOriginal(name, type, seqid)
 };
 
 FinagleTBinaryProtocol.prototype.writeMessageBeginOriginal = function(name, type, seqid) {
@@ -204,6 +188,15 @@ FinagleTBinaryProtocol.prototype.writeBinary = function(arg) {
 };
 
 FinagleTBinaryProtocol.prototype.readMessageBegin = function() {
+    var header = new Tracing.ResponseHeader()
+    header.read(this)
+    //console.log(header) //receiving tracing header, just log for now
+    //todo: do something tracing response
+
+   return this.readMessageBeginOriginal()
+};
+
+FinagleTBinaryProtocol.prototype.readMessageBeginOriginal = function() {
 
   var sz = this.readI32();
   var type, name, seqid;

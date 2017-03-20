@@ -31,7 +31,6 @@ var createClient = require('thrift/lib/nodejs/lib/thrift/create_client');
 var binary = require('thrift/lib/nodejs/lib/thrift/binary');
 
 var CanTraceMethodName = "__can__finagle__trace__v3__"
-var Tracing = require('./tracing_types')
 
 var Connection = exports.Connection = function(stream, options) {
   var self = this;
@@ -68,8 +67,6 @@ var Connection = exports.Connection = function(stream, options) {
       this.options.connect_timeout > 0) {
      this.connect_timeout = +this.options.connect_timeout;
   }
-
-  self.upgrade() //komsit //todo: need to upgrade on reconnect as well?
 
   this.connection.addListener(this.ssl ? "secureConnect" : "connect", function() {
     self.connected = true;
@@ -113,12 +110,11 @@ var Connection = exports.Connection = function(stream, options) {
     try {
       while (true) {
           if (self.upgraded === true) {
-              var header = new Tracing.ResponseHeader()
-              header.read(message)
-              //console.log(header) //receiving tracing header, just log for now
-              //todo: return tracing response
+              var header = message.readMessageBegin();
+          } else {
+              var header = message.readMessageBeginOriginal();
           }
-        var header = message.readMessageBegin();
+
         var dummy_seqid = header.rseqid * -1;
         var client = self.client;
         //The Multiplexed Protocol stores a hash of seqid to service names
