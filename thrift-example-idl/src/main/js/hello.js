@@ -6,7 +6,7 @@ var ttypes = require('./gen-nodejs/calculator_types');
 
 var transport = thrift.TFramedTransport;
 // var protocol = thrift.TBinaryProtocol;
-var protocol = require('./finagle-thrift/finagle_binary_protocol');
+var protocol = require('./finagle-thrift/finagle_binary_protocol_ext');
 // var finagleConnection = require('./finagle-thrift/finagle_connection');
 var finagleConnection = require('./finagle-thrift/finagle_connection_ext');
 var TracingHeader = require('./finagle-thrift/tracing_header_factory');
