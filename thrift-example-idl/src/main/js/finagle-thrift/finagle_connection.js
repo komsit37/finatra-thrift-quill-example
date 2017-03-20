@@ -30,6 +30,8 @@ var createClient = require('thrift/lib/nodejs/lib/thrift/create_client');
 
 var binary = require('thrift/lib/nodejs/lib/thrift/binary');
 
+var CanTraceMethodName = "__can__finagle__trace__v3__"
+
 var Connection = exports.Connection = function(stream, options) {
   var self = this;
   EventEmitter.call(this);
@@ -44,6 +46,7 @@ var Connection = exports.Connection = function(stream, options) {
   this.protocol = this.options.protocol || TBinaryProtocol;
   this.offline_queue = [];
   this.connected = false;
+  this.upgraded = false; //komsit
   this.initialize_retry_vars();
 
   this._debug = this.options.debug || false;
@@ -65,8 +68,11 @@ var Connection = exports.Connection = function(stream, options) {
      this.connect_timeout = +this.options.connect_timeout;
   }
 
+  self.upgrade() //komsit //todo: need to upgrade on reconnect as well?
+
   this.connection.addListener(this.ssl ? "secureConnect" : "connect", function() {
     self.connected = true;
+    console.log('connected')
 
     this.setTimeout(self.options.timeout || 0);
     this.setNoDelay();
@@ -141,9 +147,14 @@ var Connection = exports.Connection = function(stream, options) {
           client['recv_' + header.fname](message, header.mtype, dummy_seqid);
         } else {
           delete client._reqs[dummy_seqid];
-          self.emit("error",
-                    new thrift.TApplicationException(thrift.TApplicationExceptionType.WRONG_METHOD_NAME,
-                             "Received a response to an unknown RPC function"));
+          if (header.fname == CanTraceMethodName) {
+              console.log('upgraded') //do nothing for upgrade
+              self.upgraded = true
+          } else {
+              self.emit("error",
+                  new thrift.TApplicationException(thrift.TApplicationExceptionType.WRONG_METHOD_NAME,
+                      "Received a response to an unknown RPC function"));
+          }
         }
       }
     }
@@ -158,6 +169,20 @@ var Connection = exports.Connection = function(stream, options) {
   }));
 };
 util.inherits(Connection, EventEmitter);
+
+//komsit custom code
+Connection.prototype.upgrade = function() {
+  var self = this
+    console.log('upgrading')
+    var writeCb = function(buf, seqid) {
+        self.connection.write(buf, seqid);
+    };
+    var output = new self.protocol(new self.transport(undefined, writeCb));
+    output.writeMessageBegin(CanTraceMethodName, thrift.MessageType.CALL, 0);
+    output.writeMessageEnd();
+    output.flush();
+    //todo: overwrite write to prepend tracing header to message after upgrade
+}
 
 Connection.prototype.end = function() {
   this.connection.end();
@@ -351,5 +376,7 @@ StdIOConnection.prototype.write = function(data) {
 exports.createStdIOConnection = function(command,options){
   return new StdIOConnection(command,options);
 };
+
+
 
 exports.createStdIOClient = createClient;

@@ -43,22 +43,7 @@ function FinagleTBinaryProtocol(trans, strictRead, strictWrite) {
   this.trans = trans;
   this.strictRead = (strictRead !== undefined ? strictRead : false);
   this.strictWrite = (strictWrite !== undefined ? strictWrite : true);
-
-  if (FinagleTBinaryProtocol.upgraded === undefined) {
-      this.upgrade()
-  }
 };
-
-FinagleTBinaryProtocol.prototype.upgrade = function() {
-  console.log('init')
-  this.writeMessageBegin('__can__finagle__trace__v3__', Thrift.MessageType.CALL, 0);
-  // var args = new Calculator___can__finagle__trace__v3___args();
-  // args.write(output);
-  this.writeMessageEnd();
-  FinagleTBinaryProtocol.upgraded = false // do not upgrade until we get reply
-  FinagleTBinaryProtocol.upgrading = true //
-  this.flush();
-}
 
 FinagleTBinaryProtocol.prototype.flush = function() {
   return this.trans.flush();
@@ -75,7 +60,9 @@ FinagleTBinaryProtocol.prototype.writeMessageBegin = function(name, type, seqid)
             client_id: new Tracing.ClientId({name: 'nodejs'})
         })
         header.write(this)
+
     }
+    FinagleTBinaryProtocol.upgrading = true
     if (this.strictWrite) {
       this.writeI32(VERSION_1 | type);
       this.writeString(name);

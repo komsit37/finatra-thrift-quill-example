@@ -55,9 +55,3 @@ this.writeMessageBegin('__can__finagle__trace__v3__', Thrift.MessageType.CALL, 0
 
 1. How to pass trace request to protocol?
 2. How to wait for upgrade reply before sending first message?
-3. How to make it work without adding this in the generated code
-```js
-CalculatorClient.prototype.recv___can__finagle__trace__v3__ = function(input,mtype,rseqid) {
-    console.log('upgraded')
-};
-```
