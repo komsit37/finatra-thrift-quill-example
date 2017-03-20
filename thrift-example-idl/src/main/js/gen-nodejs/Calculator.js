@@ -303,8 +303,6 @@ CalculatorClient.prototype.recv_x = function(input,mtype,rseqid) {
   }
   return callback('x failed: unknown result');
 };
-
-
 CalculatorProcessor = exports.Processor = function(handler) {
   this._handler = handler
 }
